@@ -1,18 +1,12 @@
 package main;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.Base64;
+import java.time.Duration;
+import java.util.Map;
 
 public class Main {
 
@@ -22,7 +16,11 @@ public class Main {
     static String password = "xRCKFT";
     static String proxyHost = "81.176.239.100";
     static int proxyPort = 8000;
-    static URI uri1 = URI.create("http://info.cern.ch");
+
+    static String proHost = "109.224.6.142";
+    static int proPort = 1080;
+
+    static URI uri1 = URI.create("https://www.adidas.ru/");
     static URI uri2 = URI.create("https://stackoverflow.com/questions/3304006/persistent-httpurlconnection-in-java");
 
     static URL url1;
@@ -33,7 +31,7 @@ public class Main {
         try {
             url1 = new URL("https://stackoverflow.com:433/questions/3304006/persistent-httpurlconnection-in-java");
             url2 = new URL("https://docs.oracle.com/javase/7/docs/technotes/guides/jweb/networking/proxie_config.html");
-            url3 = new URL("https://ria.ru/20210702/shpionazh-1739511523.html");
+            url3 = new URL("https://www.ozon.ru/product/elektrogril-delonghi-cgh1030d-161611701/");
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
@@ -58,22 +56,53 @@ public class Main {
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .version(HttpClient.Version.HTTP_1_1)
                 .build();
+//
+        HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
+//        for (Map.Entry<String , String> entry : AdidasConfig.adidas.entrySet()) {
+//            httpRequestBuilder.setHeader(entry.getKey(), entry.getValue());
+//        }
 
-        HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(uri1)
-                .header("Content-Type", "application/json")
-                .build();
+//        HttpRequest httpRequest = httpRequestBuilder
+//                .uri(uri2)
+//                .GET()
+//                .timeout(Duration.ofMillis(10_000))
+////                .headers(OzonConfig.cartHeaders.entrySet().toArray().)
+////                .POST(HttpRequest.BodyPublishers.ofString("[{\"id\":161611701,\"quantity\":1}]"))
+////                .headers()
+//                .build();
+//
+//        System.out.println(httpRequest.headers());
 
-        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-        System.out.println(response.statusCode());
-        System.out.println(response.headers());
-        System.out.println(response.body());
+
+//        httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString())
+//                .thenApply(response -> {
+//                    System.out.println("Async request:");
+//                    System.out.println(response.statusCode());
+//                    return response;
+//                })
+//                .thenApply(HttpResponse::headers)
+//                .thenAccept(System.out::println);
+//        Thread.sleep(4000);
+//        System.out.println(httpRequest.headers());
+//        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+//        System.out.println(response.statusCode());
+//        System.out.println(response.headers());
+//        System.out.println(response.body());
+
 
         // solution for both http and https requests for java 8
 
-        ProxiedHttpsConnection proxiedHttpsConnection = new ProxiedHttpsConnection(url2, proxyHost, proxyPort, username, password);
+//        StringBuilder cookies = new StringBuilder();
+//        for (Map.Entry<String , String> entry : OzonConfig.cartHeaders.entrySet()) {
+//            cookies.append(entry.getKey() + "=" + entry.getValue()).append(";");
+//        }
+        
+        ProxiedHttpsConnection proxiedHttpsConnection = new ProxiedHttpsConnection(url1, proxyHost, proxyPort, username, password);
         proxiedHttpsConnection.setRequestMethod("GET");
-        proxiedHttpsConnection.setRequestProperty("User-Agent", "curl/7.64.1");
+        for (Map.Entry<String , String> entry : OzonConfig.cartHeaders.entrySet()) {
+            proxiedHttpsConnection.addRequestProperty(entry.getKey(), entry.getValue());
+        }
+        proxiedHttpsConnection.connect();
         try (InputStream inputStream = proxiedHttpsConnection.getInputStream()) {
             byte[] buffer = new byte[1024];
             int length;
@@ -81,5 +110,6 @@ public class Main {
                 System.out.write(buffer, 0, length);
             }
         }
+        System.out.println(proxiedHttpsConnection.getHeaderFields());
     }
 }

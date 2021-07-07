@@ -13,6 +13,7 @@ public class ProxiedHttpsConnection extends HttpURLConnection {
     private final String proxyHost;
     private final int proxyPort;
     private static final byte[] NEWLINE = "\r\n".getBytes();//should be "ASCII7"
+    private static final String PROTOCOL = " HTTP/1.0\r\n";
 
     private Socket socket;
     private final Map<String, List<String>> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -174,9 +175,9 @@ public class ProxiedHttpsConnection extends HttpURLConnection {
         }
 
         // Some proxies return http/1.1, some http/1.0 even we asked for 1.0
-        if (!replyStr.startsWith("HTTP/1.0 200") && !replyStr.startsWith("HTTP/1.1 200")) {
-            throw new IOException("Unable to tunnel. Proxy returns \"" + replyStr + "\"");
-        }
+//        if (!replyStr.startsWith("HTTP/1.0 200") && !replyStr.startsWith("HTTP/1.1 200")) {
+//            throw new IOException("Unable to tunnel. Proxy returns \"" + replyStr + "\"");
+//        }
         SSLSocket s = (SSLSocket) ((SSLSocketFactory) SSLSocketFactory.getDefault())
                 .createSocket(socket, url.getHost(), url.getPort(), true);
         s.startHandshake();
@@ -261,9 +262,9 @@ public class ProxiedHttpsConnection extends HttpURLConnection {
         }
 
         /* We asked for HTTP/1.0, so we should get that back */
-        if ((!replyStr.startsWith("HTTP/1.0 200")) && !replyStr.startsWith("HTTP/1.1 200")) {
-            throw new IOException("Server returns \"" + replyStr + "\"");
-        }
+//        if ((!replyStr.startsWith("HTTP/1.0 200")) && !replyStr.startsWith("HTTP/1.1 200")) {
+//            throw new IOException("Server returns \"" + replyStr + "\"");
+//        }
     }
 
     @Override
